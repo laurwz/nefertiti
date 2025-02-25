@@ -1,32 +1,24 @@
-// Escena y configuración básica de Three.js
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0);
 document.body.appendChild(renderer.domElement);
 
-// Luces
 const ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
-// Textura de mármol para el tablero
 const textureLoader = new THREE.TextureLoader();
 const marbleTexture = textureLoader.load('https://raw.githubusercontent.com/laurwz/nefertiti/main/marble-texture.jpg');
-const boardGeometry = new THREE.PlaneGeometry(8, 8);
-const boardMaterial = new THREE.MeshPhongMaterial({
-    map: marbleTexture,
-    specular: 0xeeeeee,
-    shininess: 100,
-    side: THREE.DoubleSide
-});
+const boardGeometry = new THREE.BoxGeometry(8, 8, 0.5);
+const boardMaterial = new THREE.MeshPhongMaterial({ map: marbleTexture, specular: 0xeeeeee, shininess: 100 });
 const board = new THREE.Mesh(boardGeometry, boardMaterial);
-board.rotation.x = -Math.PI / 2;
+board.position.z = 0.25;
 scene.add(board);
 
-// Casillas del tablero
 const squareGeometry = new THREE.PlaneGeometry(1, 1);
 const whiteMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 const blackMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
@@ -35,25 +27,21 @@ for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
         const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
         const square = new THREE.Mesh(squareGeometry, material);
-        square.position.set(i - 3.5, j - 3.5, 0.01);
+        square.position.set(i - 3.5, j - 3.5, 0.26);
         board.add(square);
         squares.push(square);
     }
 }
 
-// Lógica de ajedrez con chess.js
 const game = new Chess();
-
-// Piezas placeholder (cubos simples)
 const pieceGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 const pieceMaterials = {
-    'w': new THREE.MeshPhongMaterial({ color: 0xffffff }), // Blancas
-    'b': new THREE.MeshPhongMaterial({ color: 0x000000 })  // Negras
+    'w': new THREE.MeshPhongMaterial({ color: 0xffffff }),
+    'b': new THREE.MeshPhongMaterial({ color: 0x000000 })
 };
 const pieces = {};
 
 function updatePieces() {
-    // Limpiar piezas anteriores
     Object.values(pieces).forEach(piece => board.remove(piece));
     const fen = game.fen().split(' ')[0];
     const rows = fen.split('/');
@@ -65,7 +53,7 @@ function updatePieces() {
             } else {
                 const color = char === char.toUpperCase() ? 'w' : 'b';
                 const piece = new THREE.Mesh(pieceGeometry, pieceMaterials[color]);
-                piece.position.set(x - 3.5, 7 - y - 3.5, 0.25);
+                piece.position.set(x - 3.5, 7 - y - 3.5, 0.5);
                 board.add(piece);
                 pieces[`${x},${y}`] = piece;
                 x++;
@@ -75,10 +63,8 @@ function updatePieces() {
 }
 updatePieces();
 
-// Configuración de la cámara
 camera.position.z = 10;
 
-// Interacción con el tablero
 let isDragging = false;
 let previousMouseX = 0;
 let previousMouseY = 0;
@@ -98,8 +84,8 @@ document.addEventListener('mousemove', (e) => {
         const deltaY = e.clientY - previousMouseY;
         rotationY += deltaX * 0.01;
         rotationX -= deltaY * 0.01;
-        rotationX = Math.max(-Math.PI / 2, Math.min(rotationX, Math.PI / 4));
-        board.rotation.x = rotationX;
+        rotationX = Math.max(-Math.PI / 4, Math.min(rotationX, Math.PI / 4));
+        board.rotation.x = rotationX - Math.PI / 2;
         board.rotation.y = rotationY;
     }
     previousMouseX = e.clientX;
@@ -136,14 +122,12 @@ document.addEventListener('touchmove', (e) => {
     }
 });
 
-// Redimensionamiento
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Raycaster para interacción con casillas
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let selectedPiece = null;
@@ -152,25 +136,32 @@ document.addEventListener('mousedown', (e) => {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(squares);
-    if (intersects.length > 0) {
-        const square = intersects[0].object;
+
+    const pieceIntersects = raycaster.intersectObjects(Object.values(pieces));
+    const squareIntersects = raycaster.intersectObjects(squares);
+
+    if (pieceIntersects.length > 0) {
+        const piece = pieceIntersects[0].object;
+        const piecePos = Object.keys(pieces).find(key => pieces[key] === piece);
+        const [x, y] = piecePos.split(',').map(Number);
+        selectedPiece = `${String.fromCharCode(97 + x)}${8 - y}`;
+        piece.position.z = 0.75;
+    } else if (squareIntersects.length > 0 && selectedPiece) {
+        const square = squareIntersects[0].object;
         const x = Math.floor(square.position.x + 3.5);
         const y = Math.floor(square.position.y + 3.5);
         const pos = `${String.fromCharCode(97 + x)}${8 - y}`;
-        if (selectedPiece) {
-            const move = game.move({ from: selectedPiece, to: pos });
-            if (move) {
-                updatePieces();
-            }
-            selectedPiece = null;
-        } else if (game.get(pos)) {
-            selectedPiece = pos;
+        const move = game.move({ from: selectedPiece, to: pos });
+        if (move) {
+            updatePieces();
+        } else {
+            const [oldX, oldY] = [selectedPiece.charCodeAt(0) - 97, 8 - parseInt(selectedPiece[1])];
+            pieces[`${oldX},${oldY}`].position.z = 0.5;
         }
+        selectedPiece = null;
     }
 });
 
-// Animación
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
