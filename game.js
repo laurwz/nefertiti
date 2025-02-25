@@ -12,7 +12,7 @@ directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
 const textureLoader = new THREE.TextureLoader();
-const marbleTexture = textureLoader.load('marble.jpg', 
+const marbleTexture = textureLoader.load('/nefertiti/marble.jpg', 
     () => console.log("Textura de mármol cargada correctamente"),
     undefined,
     (err) => console.error("Error al cargar la textura de mármol:", err)
@@ -20,7 +20,7 @@ const marbleTexture = textureLoader.load('marble.jpg',
 marbleTexture.wrapS = THREE.RepeatWrapping;
 marbleTexture.wrapT = THREE.RepeatWrapping;
 marbleTexture.repeat.set(4, 4); // Aumentar repetición para mejor visibilidad
-const boardGeometry = new THREE.BoxGeometry(8, 8, 2); // Aumentar grosor a 2 para hacer la extrusión más evidente
+const boardGeometry = new THREE.BoxGeometry(8, 8, 2); // Grosor evidente
 const boardMaterial = new THREE.MeshPhongMaterial({ 
     map: marbleTexture, 
     specular: 0xeeeeee, 
@@ -38,7 +38,7 @@ for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
         const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
         const square = new THREE.Mesh(squareGeometry, material);
-        square.position.set(i - 3.5, j - 3.5, 1.01); // Ajustar a la nueva altura del tablero
+        square.position.set(i - 3.5, j - 3.5, 1.01); // Ajustar a la nueva altura
         board.add(square);
         squares.push(square);
     }
@@ -75,14 +75,14 @@ function updatePieces() {
 updatePieces();
 
 // Configuración inicial de la cámara (perspectiva inclinada desde la derecha)
-camera.position.set(10, -10, 10); // Posición inicial para ver desde un ángulo inclinado hacia la derecha
+camera.position.set(10, -10, 10); // Posición inicial para ver desde un ángulo inclinado
 camera.lookAt(new THREE.Vector3(0, 0, 1)); // Centrar en el centro del tablero
 
 let isDragging = false;
 let previousMouseX = 0;
 let previousMouseY = 0;
-let rotationY = Math.PI / 4; // Iniciar con 45° de rotación en Y para la perspectiva inicial
-let zoomFactor = 1;
+let rotationY = Math.PI / 4; // Iniciar con 45° de rotación en Y
+let zoomFactor = 1; // Declarar zoomFactor como variable global
 
 document.addEventListener('mousedown', (e) => {
     isDragging = true;
@@ -93,8 +93,8 @@ document.addEventListener('mouseup', () => isDragging = false);
 document.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const deltaX = e.clientX - previousMouseX;
-        rotationY += deltaX * 0.01; // Solo rotación horizontal (eje Y)
-        board.rotation.y = rotationY; // Rotación completa de 360° en Y
+        rotationY += deltaX * 0.01; // Solo rotación horizontal (eje Y, 360°)
+        board.rotation.y = rotationY;
     }
     previousMouseX = e.clientX;
     previousMouseY = e.clientY;
@@ -102,7 +102,7 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('wheel', (e) => {
     zoomFactor += e.deltaY > 0 ? 0.1 : -0.1;
-    zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3)); // Zoom más cercano (mínimo 5, máximo 30)
+    zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3)); // Zoom más cercano
     camera.position.z = zoomFactor * 10;
     e.preventDefault();
 });
