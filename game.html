@@ -7,11 +7,11 @@
     <style>
         body {
             margin: 0;
-            background: #1a0d2b;
+            background: #1a0d2b url('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/eso0932a.jpg') repeat;
             overflow: hidden;
         }
         canvas {
-            display: block; /* Elimina los márgenes del canvas */
+            display: block;
         }
         h1 {
             position: absolute;
@@ -27,6 +27,8 @@
 <body>
     <h1>Ajedrez Esotérico</h1>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
