@@ -5,9 +5,9 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000, 0); // Fondo transparente
 document.body.appendChild(renderer.domElement);
 
-const ambientLight = new THREE.AmbientLight(0x404040, 2); // Aumentar intensidad
+const ambientLight = new THREE.AmbientLight(0x404040, 2); // Iluminación aumentada
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Aumentar intensidad
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Iluminación aumentada
 directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
@@ -19,15 +19,15 @@ const marbleTexture = textureLoader.load('marble.jpg',
 );
 marbleTexture.wrapS = THREE.RepeatWrapping;
 marbleTexture.wrapT = THREE.RepeatWrapping;
-marbleTexture.repeat.set(2, 2); // Repetir la textura para mejor visibilidad
-const boardGeometry = new THREE.BoxGeometry(8, 8, 1); // Aumentar grosor a 1 para notar la extrusión
+marbleTexture.repeat.set(4, 4); // Aumentar repetición para mejor visibilidad
+const boardGeometry = new THREE.BoxGeometry(8, 8, 2); // Aumentar grosor a 2 para hacer la extrusión más evidente
 const boardMaterial = new THREE.MeshPhongMaterial({ 
     map: marbleTexture, 
     specular: 0xeeeeee, 
     shininess: 100 
 });
 const board = new THREE.Mesh(boardGeometry, boardMaterial);
-board.position.z = 0.5; // Ajustar posición por el grosor
+board.position.z = 1; // Ajustar posición por el grosor
 scene.add(board);
 
 const squareGeometry = new THREE.PlaneGeometry(1, 1);
@@ -38,7 +38,7 @@ for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
         const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
         const square = new THREE.Mesh(squareGeometry, material);
-        square.position.set(i - 3.5, j - 3.5, 0.51); // Ajustar a la nueva altura del tablero
+        square.position.set(i - 3.5, j - 3.5, 1.01); // Ajustar a la nueva altura del tablero
         board.add(square);
         squares.push(square);
     }
@@ -64,7 +64,7 @@ function updatePieces() {
             } else {
                 const color = char === char.toUpperCase() ? 'w' : 'b';
                 const piece = new THREE.Mesh(pieceGeometry, pieceMaterials[color]);
-                piece.position.set(x - 3.5, 7 - y - 3.5, 0.75); // Ajustar altura
+                piece.position.set(x - 3.5, 7 - y - 3.5, 1.25); // Ajustar altura
                 board.add(piece);
                 pieces[`${x},${y}`] = piece;
                 x++;
@@ -74,13 +74,15 @@ function updatePieces() {
 }
 updatePieces();
 
-camera.position.z = 10;
+// Configuración inicial de la cámara (perspectiva inclinada desde la derecha)
+camera.position.set(10, -10, 10); // Posición inicial para ver desde un ángulo inclinado hacia la derecha
+camera.lookAt(new THREE.Vector3(0, 0, 1)); // Centrar en el centro del tablero
 
 let isDragging = false;
 let previousMouseX = 0;
 let previousMouseY = 0;
-let rotationX = -Math.PI / 2; // Inicialmente plano
-let rotationY = 0;
+let rotationY = Math.PI / 4; // Iniciar con 45° de rotación en Y para la perspectiva inicial
+let zoomFactor = 1;
 
 document.addEventListener('mousedown', (e) => {
     isDragging = true;
@@ -91,12 +93,8 @@ document.addEventListener('mouseup', () => isDragging = false);
 document.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const deltaX = e.clientX - previousMouseX;
-        const deltaY = e.clientY - previousMouseY;
-        rotationX += deltaX * 0.01; // Rotación completa en X
-        rotationY -= deltaY * 0.01; // Limitar en Y
-        rotationY = Math.max(-Math.PI / 9, Math.min(rotationY, Math.PI / 9)); // ±20° (aprox Math.PI / 9)
-        board.rotation.x = rotationX;
-        board.rotation.y = rotationY;
+        rotationY += deltaX * 0.01; // Solo rotación horizontal (eje Y)
+        board.rotation.y = rotationY; // Rotación completa de 360° en Y
     }
     previousMouseX = e.clientX;
     previousMouseY = e.clientY;
@@ -104,7 +102,7 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('wheel', (e) => {
     zoomFactor += e.deltaY > 0 ? 0.1 : -0.1;
-    zoomFactor = Math.max(1, Math.min(zoomFactor, 5));
+    zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3)); // Zoom más cercano (mínimo 5, máximo 30)
     camera.position.z = zoomFactor * 10;
     e.preventDefault();
 });
@@ -125,7 +123,7 @@ document.addEventListener('touchmove', (e) => {
         const zoomChange = currentDistance - initialTouchDistance;
         if (Math.abs(zoomChange) > 10) {
             zoomFactor += zoomChange * 0.01;
-            zoomFactor = Math.max(1, Math.min(zoomFactor, 5));
+            zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3));
             camera.position.z = zoomFactor * 10;
             initialTouchDistance = currentDistance;
         }
@@ -155,7 +153,7 @@ document.addEventListener('mousedown', (e) => {
         const piecePos = Object.keys(pieces).find(key => pieces[key] === piece);
         const [x, y] = piecePos.split(',').map(Number);
         selectedPiece = `${String.fromCharCode(97 + x)}${8 - y}`;
-        piece.position.z = 1; // Resaltar subiendo más
+        piece.position.z = 1.5; // Resaltar subiendo más
     } else if (squareIntersects.length > 0 && selectedPiece) {
         const square = squareIntersects[0].object;
         const x = Math.floor(square.position.x + 3.5);
@@ -166,7 +164,7 @@ document.addEventListener('mousedown', (e) => {
             updatePieces();
         } else {
             const [oldX, oldY] = [selectedPiece.charCodeAt(0) - 97, 8 - parseInt(selectedPiece[1])];
-            pieces[`${oldX},${oldY}`].position.z = 0.75;
+            pieces[`${oldX},${oldY}`].position.z = 1.25;
         }
         selectedPiece = null;
     }
