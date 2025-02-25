@@ -2,29 +2,32 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 0);
+renderer.setClearColor(0x000000, 0); // Fondo transparente
 document.body.appendChild(renderer.domElement);
 
-const ambientLight = new THREE.AmbientLight(0x404040);
+const ambientLight = new THREE.AmbientLight(0x404040, 2); // Aumentar intensidad
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Aumentar intensidad
 directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
 const textureLoader = new THREE.TextureLoader();
 const marbleTexture = textureLoader.load('marble.jpg', 
-    () => console.log("Textura cargada correctamente"),
+    () => console.log("Textura de mármol cargada correctamente"),
     undefined,
-    (err) => console.error("Error al cargar la textura:", err)
+    (err) => console.error("Error al cargar la textura de mármol:", err)
 );
-const boardGeometry = new THREE.BoxGeometry(8, 8, 0.5);
+marbleTexture.wrapS = THREE.RepeatWrapping;
+marbleTexture.wrapT = THREE.RepeatWrapping;
+marbleTexture.repeat.set(2, 2); // Repetir la textura para mejor visibilidad
+const boardGeometry = new THREE.BoxGeometry(8, 8, 1); // Aumentar grosor a 1 para notar la extrusión
 const boardMaterial = new THREE.MeshPhongMaterial({ 
     map: marbleTexture, 
     specular: 0xeeeeee, 
     shininess: 100 
 });
 const board = new THREE.Mesh(boardGeometry, boardMaterial);
-board.position.z = 0.25;
+board.position.z = 0.5; // Ajustar posición por el grosor
 scene.add(board);
 
 const squareGeometry = new THREE.PlaneGeometry(1, 1);
@@ -35,7 +38,7 @@ for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
         const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
         const square = new THREE.Mesh(squareGeometry, material);
-        square.position.set(i - 3.5, j - 3.5, 0.26);
+        square.position.set(i - 3.5, j - 3.5, 0.51); // Ajustar a la nueva altura del tablero
         board.add(square);
         squares.push(square);
     }
@@ -61,7 +64,7 @@ function updatePieces() {
             } else {
                 const color = char === char.toUpperCase() ? 'w' : 'b';
                 const piece = new THREE.Mesh(pieceGeometry, pieceMaterials[color]);
-                piece.position.set(x - 3.5, 7 - y - 3.5, 0.5);
+                piece.position.set(x - 3.5, 7 - y - 3.5, 0.75); // Ajustar altura
                 board.add(piece);
                 pieces[`${x},${y}`] = piece;
                 x++;
@@ -76,9 +79,8 @@ camera.position.z = 10;
 let isDragging = false;
 let previousMouseX = 0;
 let previousMouseY = 0;
-let rotationX = -Math.PI / 2;
+let rotationX = -Math.PI / 2; // Inicialmente plano
 let rotationY = 0;
-let zoomFactor = 1;
 
 document.addEventListener('mousedown', (e) => {
     isDragging = true;
@@ -90,10 +92,10 @@ document.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const deltaX = e.clientX - previousMouseX;
         const deltaY = e.clientY - previousMouseY;
-        rotationY += deltaX * 0.01;
-        rotationX -= deltaY * 0.01;
-        rotationX = Math.max(-Math.PI / 4, Math.min(rotationX, Math.PI / 4));
-        board.rotation.x = rotationX - Math.PI / 2;
+        rotationX += deltaX * 0.01; // Rotación completa en X
+        rotationY -= deltaY * 0.01; // Limitar en Y
+        rotationY = Math.max(-Math.PI / 9, Math.min(rotationY, Math.PI / 9)); // ±20° (aprox Math.PI / 9)
+        board.rotation.x = rotationX;
         board.rotation.y = rotationY;
     }
     previousMouseX = e.clientX;
@@ -153,7 +155,7 @@ document.addEventListener('mousedown', (e) => {
         const piecePos = Object.keys(pieces).find(key => pieces[key] === piece);
         const [x, y] = piecePos.split(',').map(Number);
         selectedPiece = `${String.fromCharCode(97 + x)}${8 - y}`;
-        piece.position.z = 0.75;
+        piece.position.z = 1; // Resaltar subiendo más
     } else if (squareIntersects.length > 0 && selectedPiece) {
         const square = squareIntersects[0].object;
         const x = Math.floor(square.position.x + 3.5);
@@ -164,7 +166,7 @@ document.addEventListener('mousedown', (e) => {
             updatePieces();
         } else {
             const [oldX, oldY] = [selectedPiece.charCodeAt(0) - 97, 8 - parseInt(selectedPiece[1])];
-            pieces[`${oldX},${oldY}`].position.z = 0.5;
+            pieces[`${oldX},${oldY}`].position.z = 0.75;
         }
         selectedPiece = null;
     }
