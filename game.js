@@ -18,10 +18,14 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
+// Cargar la textura de mármol para el tablero
+const textureLoader = new THREE.TextureLoader();
+const marbleTexture = textureLoader.load('https://www.publicdomainpictures.net/pictures/10000/velka/marble-texture-1572543034q4l.jpg');  // URL de textura de mármol
+
 // Crear el tablero de ajedrez (plano 3D de mármol)
 const boardGeometry = new THREE.PlaneGeometry(8, 8);  // El tamaño del tablero es 8x8
 const boardMaterial = new THREE.MeshPhongMaterial({
-    color: 0xcccccc,   // Color base del mármol
+    map: marbleTexture,  // Usar la textura de mármol
     specular: 0xeeeeee,  // Brillo especular
     shininess: 100,     // Brillo del mármol
     side: THREE.DoubleSide
@@ -33,8 +37,8 @@ scene.add(board);
 
 // Crear las casillas del tablero (alternando colores)
 const squareGeometry = new THREE.PlaneGeometry(1, 1);
-const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
 
 for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
@@ -69,8 +73,15 @@ document.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const deltaX = e.clientX - previousMouseX;
         const deltaY = e.clientY - previousMouseY;
+        
+        // Limitar la rotación para no permitir que gire demasiado hacia abajo
         rotationX += deltaY * 0.01;
         rotationY += deltaX * 0.01;
+        
+        // Limitar la rotación en X (para no permitir que gire hacia la parte inferior)
+        if (rotationX > Math.PI / 4) rotationX = Math.PI / 4;
+        if (rotationX < -Math.PI / 4) rotationX = -Math.PI / 4;
+
         board.rotation.x = rotationX;
         board.rotation.y = rotationY;
     }
