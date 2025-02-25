@@ -12,9 +12,17 @@ directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
 const textureLoader = new THREE.TextureLoader();
-const marbleTexture = textureLoader.load('https://raw.githubusercontent.com/laurwz/nefertiti/main/marble-texture.jpg');
+const marbleTexture = textureLoader.load('marble.jpg', 
+    () => console.log("Textura cargada correctamente"),
+    undefined,
+    (err) => console.error("Error al cargar la textura:", err)
+);
 const boardGeometry = new THREE.BoxGeometry(8, 8, 0.5);
-const boardMaterial = new THREE.MeshPhongMaterial({ map: marbleTexture, specular: 0xeeeeee, shininess: 100 });
+const boardMaterial = new THREE.MeshPhongMaterial({ 
+    map: marbleTexture, 
+    specular: 0xeeeeee, 
+    shininess: 100 
+});
 const board = new THREE.Mesh(boardGeometry, boardMaterial);
 board.position.z = 0.25;
 scene.add(board);
