@@ -5,7 +5,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 // Configurar el renderizador WebGL
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement); // Añadir el canvas al cuerpo del HTML
 
@@ -37,8 +37,8 @@ scene.add(board);
 
 // Crear las casillas del tablero (alternando colores)
 const squareGeometry = new THREE.PlaneGeometry(1, 1);
-const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
-const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
+const whiteMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+const blackMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
 
 let squares = [];
 for (let i = 0; i < 8; i++) {
@@ -60,6 +60,10 @@ let previousMouseX = 0;
 let previousMouseY = 0;
 let rotationX = 0;
 let rotationY = 0;
+
+// Variables para el zoom
+let zoomFactor = 1;
+const zoomSpeed = 0.1;  // Velocidad del zoom
 
 document.addEventListener('mousedown', (e) => {
     isDragging = true;
@@ -88,6 +92,47 @@ document.addEventListener('mousemove', (e) => {
     }
     previousMouseX = e.clientX;
     previousMouseY = e.clientY;
+});
+
+// Función para el zoom con rueda del ratón
+document.addEventListener('wheel', (e) => {
+    // Zoom solo en la escena 3D, no en la web
+    if (e.deltaY > 0) {
+        zoomFactor += zoomSpeed;  // Acercar
+    } else {
+        zoomFactor -= zoomSpeed;  // Alejar
+    }
+
+    // Limitar el zoom
+    zoomFactor = Math.max(1, Math.min(zoomFactor, 5));
+    camera.position.z = zoomFactor * 10;  // Ajustar la posición de la cámara para el zoom
+    e.preventDefault();  // Prevenir el zoom de la página web
+});
+
+// Función para el zoom con gestos táctiles (móvil)
+document.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+        const zoomChange = currentDistance - initialTouchDistance;
+
+        if (Math.abs(zoomChange) > 10) {
+            zoomFactor += zoomChange * 0.01;
+            zoomFactor = Math.max(1, Math.min(zoomFactor, 5));
+            camera.position.z = zoomFactor * 10;
+        }
+    }
+});
+
+// Iniciar la distancia inicial del toque
+let initialTouchDistance = 0;
+document.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        initialTouchDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+    }
 });
 
 // Función de animación para renderizar la escena continuamente
