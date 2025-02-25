@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajedrez Esotérico 3D - Ejemplo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+        }
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #d4aaff;
+            font-size: 40px;
+            z-index: 1;
+            text-shadow: 0 0 10px #d4aaff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ajedrez Esotérico 3D</h1>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r153/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r153/examples/jsm/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r153/examples/jsm/postprocessing/RenderPass.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r153/examples/jsm/postprocessing/BloomPass.js"></script>
+    <script src="/nefertiti/game_example.js"></script>
+</body>
+</html>
