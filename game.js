@@ -20,7 +20,7 @@ scene.add(directionalLight);
 
 // Cargar la textura de mármol para el tablero
 const textureLoader = new THREE.TextureLoader();
-const marbleTexture = textureLoader.load('https://www.publicdomainpictures.net/pictures/10000/velka/marble-texture-1572543034q4l.jpg');  // URL de textura de mármol
+const marbleTexture = textureLoader.load('marbel.jpg');  // URL de textura de mármol
 
 // Crear el tablero de ajedrez (plano 3D de mármol)
 const boardGeometry = new THREE.PlaneGeometry(8, 8);  // El tamaño del tablero es 8x8
