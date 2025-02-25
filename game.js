@@ -40,12 +40,14 @@ const squareGeometry = new THREE.PlaneGeometry(1, 1);
 const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
 const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 });
 
+let squares = [];
 for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
         const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
         const square = new THREE.Mesh(squareGeometry, material);
         square.position.set(i - 3.5, j - 3.5, 0);  // Posicionar las casillas
-        scene.add(square);
+        board.add(square);  // Añadir las casillas como hijas del tablero
+        squares.push(square); // Guardar las casillas en un array
     }
 }
 
@@ -75,15 +77,14 @@ document.addEventListener('mousemove', (e) => {
         const deltaY = e.clientY - previousMouseY;
         
         // Limitar la rotación para no permitir que gire demasiado hacia abajo
-        rotationX += deltaY * 0.01;
-        rotationY += deltaX * 0.01;
+        rotationY += deltaX * 0.01;  // Solo rotación en Y (horizontal)
         
-        // Limitar la rotación en X (para no permitir que gire hacia la parte inferior)
+        // Asegurarse de que no gire hacia arriba o hacia abajo
         if (rotationX > Math.PI / 4) rotationX = Math.PI / 4;
         if (rotationX < -Math.PI / 4) rotationX = -Math.PI / 4;
 
-        board.rotation.x = rotationX;
-        board.rotation.y = rotationY;
+        board.rotation.x = rotationX;  // Rotación solo en X (vertical)
+        board.rotation.y = rotationY;  // Rotación solo en Y (horizontal)
     }
     previousMouseX = e.clientX;
     previousMouseY = e.clientY;
