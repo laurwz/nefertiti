@@ -7,14 +7,11 @@
     <style>
         body {
             margin: 0;
-            background: #1a0d2b; /* Fondo oscuro */
-            color: #d4aaff;
-            font-family: Arial, sans-serif;
+            background: #1a0d2b;
+            overflow: hidden;
         }
         canvas {
-            display: block;
-            width: 100%;
-            height: 100vh;
+            display: block; /* Elimina los márgenes del canvas */
         }
         h1 {
             position: absolute;
@@ -30,89 +27,6 @@
 <body>
     <h1>Ajedrez Esotérico</h1>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script>
-        // Escena de Three.js
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Luz ambiental y luz direccional
-        const ambientLight = new THREE.AmbientLight(0x404040); // luz ambiental suave
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 5, 5);
-        scene.add(directionalLight);
-
-        // Crear el tablero de ajedrez (un plano de mármol)
-        const boardGeometry = new THREE.PlaneGeometry(8, 8);  // Tablero 8x8
-        const boardMaterial = new THREE.MeshPhongMaterial({
-            color: 0xcccccc,   // Color base del mármol
-            specular: 0xeeeeee,  // Brillo especular
-            shininess: 100,     // Brillo del mármol
-            side: THREE.DoubleSide
-        });
-
-        const board = new THREE.Mesh(boardGeometry, boardMaterial);
-        board.rotation.x = -Math.PI / 2; // Para ponerlo plano
-        scene.add(board);
-
-        // Añadir casillas (blancas y negras)
-        const squareGeometry = new THREE.PlaneGeometry(1, 1);
-        const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const blackMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
-                const square = new THREE.Mesh(squareGeometry, material);
-                square.position.set(i - 3.5, j - 3.5, 0);  // Posicionar las casillas
-                scene.add(square);
-            }
-        }
-
-        // Cámara
-        camera.position.z = 10;
-
-        // Habilitar el zoom y la rotación con el mouse
-        let isDragging = false;
-        let previousMouseX = 0;
-        let previousMouseY = 0;
-        let rotationX = 0;
-        let rotationY = 0;
-
-        document.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            previousMouseX = e.clientX;
-            previousMouseY = e.clientY;
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const deltaX = e.clientX - previousMouseX;
-                const deltaY = e.clientY - previousMouseY;
-                rotationX += deltaY * 0.01;
-                rotationY += deltaX * 0.01;
-                board.rotation.x = rotationX;
-                board.rotation.y = rotationY;
-            }
-            previousMouseX = e.clientX;
-            previousMouseY = e.clientY;
-        });
-
-        // Función de animación
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        animate();
-    </script>
+    <script src="game.js"></script>
 </body>
 </html>
