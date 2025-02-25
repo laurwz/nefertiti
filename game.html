@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Ajedrez Esotérico</title>
+    <style>
+        body {
+            background: #1a0d2b;
+            color: #d4aaff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 5px;
+            margin: 0 auto;
+        }
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2e1534;
+            border: 1px solid #d4aaff;
+        }
+        .square:nth-child(even) {
+            background-color: #4b2e83;
+        }
+        .piece {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ajedrez Esotérico</h1>
+    <div id="chessboard"></div>
+    <script src="game.js"></script>
+</body>
+</html>
