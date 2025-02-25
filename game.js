@@ -11,8 +11,9 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // Iluminació
 directionalLight.position.set(5, 5, 5).normalize();
 scene.add(directionalLight);
 
+// Usar una URL pública para marble.jpg en caso de que la ruta local falle
 const textureLoader = new THREE.TextureLoader();
-const marbleTexture = textureLoader.load('/nefertiti/marble.jpg', 
+const marbleTexture = textureLoader.load('https://raw.githubusercontent.com/laurwz/nefertiti/main/marble.jpg', 
     () => console.log("Textura de mármol cargada correctamente"),
     undefined,
     (err) => console.error("Error al cargar la textura de mármol:", err)
@@ -74,35 +75,19 @@ function updatePieces() {
 }
 updatePieces();
 
-// Configuración inicial de la cámara (perspectiva inclinada desde la derecha)
-camera.position.set(10, -10, 10); // Posición inicial para ver desde un ángulo inclinado
+// Configuración inicial de la cámara (perspectiva fija inclinada desde la derecha)
+camera.position.set(10, -10, 10); // Posición inicial fija
 camera.lookAt(new THREE.Vector3(0, 0, 1)); // Centrar en el centro del tablero
 
-let isDragging = false;
-let previousMouseX = 0;
-let previousMouseY = 0;
-let rotationY = Math.PI / 4; // Iniciar con 45° de rotación en Y
+let isDragging = false; // No necesitamos esto ahora que eliminamos la rotación
+let previousMouseX = 0; // No necesitamos esto ahora que eliminamos la rotación
+let previousMouseY = 0; // No necesitamos esto ahora que eliminamos la rotación
 let zoomFactor = 1; // Declarar zoomFactor como variable global
 
-document.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    previousMouseX = e.clientX;
-    previousMouseY = e.clientY;
-});
-document.addEventListener('mouseup', () => isDragging = false);
-document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        const deltaX = e.clientX - previousMouseX;
-        rotationY += deltaX * 0.01; // Solo rotación horizontal (eje Y, 360°)
-        board.rotation.y = rotationY;
-    }
-    previousMouseX = e.clientX;
-    previousMouseY = e.clientY;
-});
-
+// Eliminar eventos de rotación (mousedown, mousemove, mouseup)
 document.addEventListener('wheel', (e) => {
     zoomFactor += e.deltaY > 0 ? 0.1 : -0.1;
-    zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3)); // Zoom más cercano
+    zoomFactor = Math.max(0.2, Math.min(zoomFactor, 3)); // Zoom más cercano (mínimo 2, máximo 30)
     camera.position.z = zoomFactor * 10;
     e.preventDefault();
 });
@@ -123,7 +108,7 @@ document.addEventListener('touchmove', (e) => {
         const zoomChange = currentDistance - initialTouchDistance;
         if (Math.abs(zoomChange) > 10) {
             zoomFactor += zoomChange * 0.01;
-            zoomFactor = Math.max(0.5, Math.min(zoomFactor, 3));
+            zoomFactor = Math.max(0.2, Math.min(zoomFactor, 3));
             camera.position.z = zoomFactor * 10;
             initialTouchDistance = currentDistance;
         }
@@ -152,17 +137,24 @@ document.addEventListener('mousedown', (e) => {
         const piece = pieceIntersects[0].object;
         const piecePos = Object.keys(pieces).find(key => pieces[key] === piece);
         const [x, y] = piecePos.split(',').map(Number);
-        selectedPiece = `${String.fromCharCode(97 + x)}${8 - y}`;
-        piece.position.z = 1.5; // Resaltar subiendo más
+        const pos = `${String.fromCharCode(97 + x)}${8 - y}`;
+        // Solo permitir seleccionar piezas del jugador actual
+        const pieceColor = game.get(pos).color;
+        const currentTurn = game.turn(); // 'w' para blancas, 'b' para negras
+        if (pieceColor === currentTurn) {
+            selectedPiece = pos;
+            piece.position.z = 1.5; // Elevar la pieza seleccionada
+        }
     } else if (squareIntersects.length > 0 && selectedPiece) {
         const square = squareIntersects[0].object;
         const x = Math.floor(square.position.x + 3.5);
         const y = Math.floor(square.position.y + 3.5);
-        const pos = `${String.fromCharCode(97 + x)}${8 - y}`;
-        const move = game.move({ from: selectedPiece, to: pos });
+        const toPos = `${String.fromCharCode(97 + x)}${8 - y}`;
+        const move = game.move({ from: selectedPiece, to: toPos });
         if (move) {
             updatePieces();
         } else {
+            // Restaurar si el movimiento no es válido
             const [oldX, oldY] = [selectedPiece.charCodeAt(0) - 97, 8 - parseInt(selectedPiece[1])];
             pieces[`${oldX},${oldY}`].position.z = 1.25;
         }
