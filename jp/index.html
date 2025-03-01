@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
 
 <body class="lang-gl" id="top">
     <nav>
@@ -166,9 +166,22 @@
     </div>
 
 
-   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+
+    let slideIndex = 0;
+    const slides = document.querySelector('.slides');
+    const totalSlides = document.querySelectorAll('.slide-container').length;
     let currentLang = 'gl';
+
+    function moveSlide(n) {
+        slideIndex += n;
+        if (slideIndex >= totalSlides) slideIndex = 0;
+        if (slideIndex < 0) slideIndex = totalSlides - 1;
+        slides.style.transform = `translateX(-${slideIndex * 100}%)`;
+    }
+
+    setInterval(() => moveSlide(1), 6000);
 
     function toggleLang() {
         if (currentLang === 'gl') {
@@ -199,6 +212,7 @@
         }
     }
 
+    // Desplazamiento suave para el ancla
     document.querySelector('.top-btn').addEventListener('click', function(e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
@@ -206,13 +220,14 @@
             top: target.offsetTop,
             behavior: 'smooth'
         });
+        // Simula parallax moviendo el fondo de .hero
         document.querySelector('.hero').style.backgroundPosition = 'center 20%';
         setTimeout(() => {
             document.querySelector('.hero').style.backgroundPosition = 'center center';
-        }, 1000);
+        }, 1000); // Vuelve al centro tras 1 segundo
     });
 
-   // Script básico para hojas
+// Script para hojas de roble con Three.js
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -223,48 +238,37 @@ heroSection.appendChild(renderer.domElement);
 renderer.domElement.style.position = 'absolute';
 renderer.domElement.style.top = '0';
 renderer.domElement.style.left = '0';
-renderer.domElement.style.zIndex = '5';
-renderer.domElement.style.pointerEvents = 'none';
+renderer.domElement.style.zIndex = '5'; // Bajo .floating-controls (z-index: 10)
+renderer.domElement.style.pointerEvents = 'none'; // Desactiva eventos de clic
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 10, 7.5);
-scene.add(directionalLight);
+const leafShape = new THREE.Shape();
+leafShape.moveTo(0, 0);
+leafShape.bezierCurveTo(0.2, 0.5, 0.4, 1, 0, 1.5);
+leafShape.bezierCurveTo(-0.4, 1, -0.2, 0.5, 0, 0);
+const leafGeometry = new THREE.ShapeGeometry(leafShape);
+const leafMaterial = new THREE.MeshBasicMaterial({ color: 0x4A704A, side: THREE.DoubleSide });
 
-const loader = new THREE.GLTFLoader();
 const leaves = [];
-
-loader.load(
-    'assets/quercus.glb', // Ruta local, ajusta si es diferente
-    (gltf) => {
-        const leafModel = gltf.scene;
-        for (let i = 0; i < 5; i++) {
-            const leaf = leafModel.clone();
-            leaf.position.x = (Math.random() - 0.5) * 20;
-            leaf.position.y = Math.random() * heroHeight / 100;
-            leaf.position.z = (Math.random() - 0.5) * 10;
-            leaf.rotation.x = Math.random() * Math.PI;
-            leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.05, 0.05, 0.05); // Escala pequeña para 1.8 MB
-            leaves.push(leaf);
-            scene.add(leaf);
-        }
-        console.log('Modelo cargado correctamente'); // Para depurar
-    },
-    (progress) => console.log('Cargando:', (progress.loaded / progress.total) * 100 + '%'),
-    (error) => console.error('Error cargando modelo:', error)
-);
+for (let i = 0; i < 10; i++) {
+    const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+    leaf.position.x = (Math.random() - 0.5) * 20;
+    leaf.position.y = Math.random() * heroHeight / 100;
+    leaf.position.z = (Math.random() - 0.5) * 10;
+    leaf.rotation.x = Math.random() * Math.PI;
+    leaf.rotation.y = Math.random() * Math.PI;
+    leaf.scale.set(0.5, 0.5, 0.5);
+    leaves.push(leaf);
+    scene.add(leaf);
+}
 
 camera.position.z = 10;
 
 function animate() {
     requestAnimationFrame(animate);
     leaves.forEach(leaf => {
-        leaf.rotation.x += 0.005;
-        leaf.rotation.y += 0.005;
-        leaf.position.y -= 0.005;
-        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005;
+        leaf.rotation.x += 0.01;
+        leaf.rotation.y += 0.01;
+        leaf.position.y -= 0.02;
         if (leaf.position.y < -heroHeight / 200) leaf.position.y = heroHeight / 200;
     });
     renderer.render(scene, camera);
