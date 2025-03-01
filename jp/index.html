@@ -214,75 +214,71 @@
     });
 
     // Script para hojas de roble con modelo 3D
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true });
-    const heroSection = document.querySelector('.hero');
-    const heroHeight = heroSection.offsetHeight;
-    renderer.setSize(window.innerWidth, heroHeight);
-    heroSection.appendChild(renderer.domElement);
-    renderer.domElement.style.position = 'absolute';
-    renderer.domElement.style.top = '0';
-    renderer.domElement.style.left = '0';
-    renderer.domElement.style.zIndex = '5';
-    renderer.domElement.style.pointerEvents = 'none';
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true });
+const heroSection = document.querySelector('.hero');
+const heroHeight = heroSection.offsetHeight;
+renderer.setSize(window.innerWidth, heroHeight);
+heroSection.appendChild(renderer.domElement);
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.top = '0';
+renderer.domElement.style.left = '0';
+renderer.domElement.style.zIndex = '5';
+renderer.domElement.style.pointerEvents = 'none';
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Más luz ambiental
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Luz direccional más fuerte
-    directionalLight.position.set(5, 10, 7.5);
-    scene.add(directionalLight);
+// Luz para texturas
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(0, 1, 1);
+scene.add(directionalLight);
 
-    const loader = new THREE.GLTFLoader();
-    const leaves = [];
+const loader = new THREE.GLTFLoader();
+const leaves = [];
 
-    loader.load(
-        'https://laurwz.github.io/nefertiti/jp/assets/quercus.glb', // Ruta absoluta en GitHub Pages
-        (gltf) => {
-            const leafModel = gltf.scene;
-            leafModel.traverse((child) => { // Sobrescribe material si quieres color base
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({ color: 0x4A704A }); // Verde musgo opcional
-                }
-            });
-            for (let i = 0; i < 5; i++) { // Reduje a 5 hojas para mejorar rendimiento
-                const leaf = leafModel.clone();
-                leaf.position.x = (Math.random() - 0.5) * 20;
-                leaf.position.y = Math.random() * heroHeight / 100;
-                leaf.position.z = (Math.random() - 0.5) * 10;
-                leaf.rotation.x = Math.random() * Math.PI;
-                leaf.rotation.y = Math.random() * Math.PI;
-                leaf.scale.set(0.05, 0.05, 0.05); // Escala reducida (ajusta según tamaño real)
-                leaves.push(leaf);
-                scene.add(leaf);
-            }
-        },
-        undefined,
-        (error) => console.error('Error cargando modelo:', error)
-    );
+loader.load(
+    'assets/leaf.glb', // Reemplaza con la ruta a tu modelo
+    (gltf) => {
+        const leafModel = gltf.scene;
+        for (let i = 0; i < 10; i++) {
+            const leaf = leafModel.clone();
+            leaf.position.x = (Math.random() - 0.5) * 20;
+            leaf.position.y = Math.random() * heroHeight / 100;
+            leaf.position.z = (Math.random() - 0.5) * 10;
+            leaf.rotation.x = Math.random() * Math.PI;
+            leaf.rotation.y = Math.random() * Math.PI;
+            leaf.scale.set(0.5, 0.5, 0.5); // Ajusta tamaño según el modelo
+            leaves.push(leaf);
+            scene.add(leaf);
+        }
+    },
+    undefined,
+    (error) => console.error('Error cargando modelo:', error)
+);
 
-    camera.position.z = 10;
+camera.position.z = 10;
 
-    function animate() {
-        requestAnimationFrame(animate);
-        leaves.forEach(leaf => {
-            leaf.rotation.x += 0.005;
-            leaf.rotation.y += 0.005;
-            leaf.position.y -= 0.005;
-            leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005;
-            if (leaf.position.y < -heroHeight / 200) leaf.position.y = heroHeight / 200;
-        });
-        renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        leaves.forEach(leaf => {
-            leaf.rotation.z = scrollY * 0.001;
-        });
-        camera.position.y = -scrollY * 0.01;
+function animate() {
+    requestAnimationFrame(animate);
+    leaves.forEach(leaf => {
+        leaf.rotation.x += 0.005;
+        leaf.rotation.y += 0.005;
+        leaf.position.y -= 0.005; // Caída lenta
+        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005; // Vaivén lateral
+        if (leaf.position.y < -heroHeight / 200) leaf.position.y = heroHeight / 200;
     });
+    renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    leaves.forEach(leaf => {
+        leaf.rotation.z = scrollY * 0.001;
+    });
+    camera.position.y = -scrollY * 0.01;
+});
 </script>
 </body>
 </html>
