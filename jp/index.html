@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/jsm/loaders/GLTFLoader.js"></script>
 
 <body class="lang-gl" id="top">
     <nav>
@@ -227,7 +226,6 @@ renderer.domElement.style.left = '0';
 renderer.domElement.style.zIndex = '5';
 renderer.domElement.style.pointerEvents = 'none';
 
-// Luz para texturas
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -238,7 +236,7 @@ const loader = new THREE.GLTFLoader();
 const leaves = [];
 
 loader.load(
-    'assets/quercus.glb', // Reemplaza con la ruta a tu modelo
+    'assets/quercus.glb', // Asegúrate de que esta ruta sea correcta
     (gltf) => {
         const leafModel = gltf.scene;
         for (let i = 0; i < 10; i++) {
@@ -248,7 +246,7 @@ loader.load(
             leaf.position.z = (Math.random() - 0.5) * 10;
             leaf.rotation.x = Math.random() * Math.PI;
             leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.5, 0.5, 0.5); // Ajusta tamaño según el modelo
+            leaf.scale.set(0.5, 0.5, 0.5);
             leaves.push(leaf);
             scene.add(leaf);
         }
@@ -264,8 +262,8 @@ function animate() {
     leaves.forEach(leaf => {
         leaf.rotation.x += 0.005;
         leaf.rotation.y += 0.005;
-        leaf.position.y -= 0.005; // Caída lenta
-        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005; // Vaivén lateral
+        leaf.position.y -= 0.005;
+        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005;
         if (leaf.position.y < -heroHeight / 200) leaf.position.y = heroHeight / 200;
     });
     renderer.render(scene, camera);
