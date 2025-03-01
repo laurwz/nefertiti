@@ -212,7 +212,7 @@
         }, 1000);
     });
 
-    // Script para hojas de roble con modelo 3D
+   // Script básico para hojas
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
@@ -226,32 +226,33 @@ renderer.domElement.style.left = '0';
 renderer.domElement.style.zIndex = '5';
 renderer.domElement.style.pointerEvents = 'none';
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(0, 1, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
 const loader = new THREE.GLTFLoader();
 const leaves = [];
 
 loader.load(
-    'assets/quercus.glb', // Asegúrate de que esta ruta sea correcta
+    'assets/quercus.glb', // Ruta local, ajusta si es diferente
     (gltf) => {
         const leafModel = gltf.scene;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 5; i++) {
             const leaf = leafModel.clone();
             leaf.position.x = (Math.random() - 0.5) * 20;
             leaf.position.y = Math.random() * heroHeight / 100;
             leaf.position.z = (Math.random() - 0.5) * 10;
             leaf.rotation.x = Math.random() * Math.PI;
             leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.5, 0.5, 0.5);
+            leaf.scale.set(0.05, 0.05, 0.05); // Escala pequeña para 1.8 MB
             leaves.push(leaf);
             scene.add(leaf);
         }
+        console.log('Modelo cargado correctamente'); // Para depurar
     },
-    undefined,
+    (progress) => console.log('Cargando:', (progress.loaded / progress.total) * 100 + '%'),
     (error) => console.error('Error cargando modelo:', error)
 );
 
