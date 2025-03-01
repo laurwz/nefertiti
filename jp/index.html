@@ -169,31 +169,11 @@
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
 
-    let slideIndex = 0;
-    const slides = document.querySelector('.slides');
-    const totalSlides = document.querySelectorAll('.slide-container').length;
+  document.addEventListener('DOMContentLoaded', () => {
+    // Variables globales
     let currentLang = 'gl';
-
-    function moveSlide(n) {
-        slideIndex += n;
-        if (slideIndex >= totalSlides) slideIndex = 0;
-        if (slideIndex < 0) slideIndex = totalSlides - 1;
-        slides.style.transform = `translateX(-${slideIndex * 100}%)`;
-    }
-
-    setInterval(() => moveSlide(1), 6000);
-
-    function toggleLang() {
-        if (currentLang === 'gl') {
-            currentLang = 'jp';
-            document.getElementById('lang-toggle').textContent = 'G';
-            changeLang('jp');
-        } else {
-            currentLang = 'gl';
-            document.getElementById('lang-toggle').textContent = 'あ';
-            changeLang('gl');
-        }
-    }
+    const langToggleBtn = document.getElementById('lang-toggle');
+    const topBtn = document.querySelector('.top-btn');
 
     function changeLang(lang) {
         document.body.className = `lang-${lang}`;
@@ -205,12 +185,40 @@
             document.querySelectorAll('nav a')[0].textContent = 'ホーム';
             document.querySelectorAll('nav a')[1].textContent = '製品';
             document.querySelectorAll('nav a')[2].textContent = '起源';
+            langToggleBtn.textContent = 'G';
         } else {
             document.querySelectorAll('nav a')[0].textContent = 'Inicio';
             document.querySelectorAll('nav a')[1].textContent = 'Produtos';
             document.querySelectorAll('nav a')[2].textContent = 'Orixes';
+            langToggleBtn.textContent = 'あ';
         }
+        currentLang = lang;
     }
+
+    langToggleBtn.addEventListener('click', () => {
+        if (currentLang === 'gl') {
+            changeLang('jp');
+        } else {
+            changeLang('gl');
+        }
+    });
+
+    topBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector('#top');
+        window.scrollTo({
+            top: target.offsetTop,
+            behavior: 'smooth'
+        });
+        document.querySelector('.hero').style.backgroundPosition = 'center 20%';
+        setTimeout(() => {
+            document.querySelector('.hero').style.backgroundPosition = 'center center';
+        }, 1000);
+    });
+
+    // Inicializa en galego
+    changeLang('gl');
+});
 
     // Desplazamiento suave para el ancla
     document.querySelector('.top-btn').addEventListener('click', function(e) {
@@ -251,7 +259,7 @@ const loader = new THREE.GLTFLoader();
 const leaves = [];
 
 loader.load(
-    'assets/quercus.glb', // Asegúrate de que esta ruta sea correcta
+    'assets/quercus.glb',
     (gltf) => {
         const leafModel = gltf.scene;
         for (let i = 0; i < 10; i++) {
@@ -261,7 +269,7 @@ loader.load(
             leaf.position.z = (Math.random() - 0.5) * 10;
             leaf.rotation.x = Math.random() * Math.PI;
             leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.5, 0.5, 0.5);
+            leaf.scale.set(0.05, 0.05, 0.05); // Mucho más pequeñas
             leaves.push(leaf);
             scene.add(leaf);
         }
