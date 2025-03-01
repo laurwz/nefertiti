@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script src="https://unpkg.com/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134/examples/jsm/loaders/GLTFLoader.js"></script>
 
 <body class="lang-gl" id="top">
     <nav>
@@ -169,31 +170,11 @@
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
 
-    let slideIndex = 0;
-    const slides = document.querySelector('.slides');
-    const totalSlides = document.querySelectorAll('.slide-container').length;
+  document.addEventListener('DOMContentLoaded', () => {
+    // Variables globales
     let currentLang = 'gl';
-
-    function moveSlide(n) {
-        slideIndex += n;
-        if (slideIndex >= totalSlides) slideIndex = 0;
-        if (slideIndex < 0) slideIndex = totalSlides - 1;
-        slides.style.transform = `translateX(-${slideIndex * 100}%)`;
-    }
-
-    setInterval(() => moveSlide(1), 6000);
-
-    function toggleLang() {
-        if (currentLang === 'gl') {
-            currentLang = 'jp';
-            document.getElementById('lang-toggle').textContent = 'G';
-            changeLang('jp');
-        } else {
-            currentLang = 'gl';
-            document.getElementById('lang-toggle').textContent = 'あ';
-            changeLang('gl');
-        }
-    }
+    const langToggleBtn = document.getElementById('lang-toggle');
+    const topBtn = document.querySelector('.top-btn');
 
     function changeLang(lang) {
         document.body.className = `lang-${lang}`;
@@ -205,12 +186,40 @@
             document.querySelectorAll('nav a')[0].textContent = 'ホーム';
             document.querySelectorAll('nav a')[1].textContent = '製品';
             document.querySelectorAll('nav a')[2].textContent = '起源';
+            langToggleBtn.textContent = 'G';
         } else {
             document.querySelectorAll('nav a')[0].textContent = 'Inicio';
             document.querySelectorAll('nav a')[1].textContent = 'Produtos';
             document.querySelectorAll('nav a')[2].textContent = 'Orixes';
+            langToggleBtn.textContent = 'あ';
         }
+        currentLang = lang;
     }
+
+    langToggleBtn.addEventListener('click', () => {
+        if (currentLang === 'gl') {
+            changeLang('jp');
+        } else {
+            changeLang('gl');
+        }
+    });
+
+    topBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector('#top');
+        window.scrollTo({
+            top: target.offsetTop,
+            behavior: 'smooth'
+        });
+        document.querySelector('.hero').style.backgroundPosition = 'center 20%';
+        setTimeout(() => {
+            document.querySelector('.hero').style.backgroundPosition = 'center center';
+        }, 1000);
+    });
+
+    // Inicializa en galego
+    changeLang('gl');
+});
 
     // Desplazamiento suave para el ancla
     document.querySelector('.top-btn').addEventListener('click', function(e) {
@@ -241,6 +250,7 @@ renderer.domElement.style.left = '0';
 renderer.domElement.style.zIndex = '5';
 renderer.domElement.style.pointerEvents = 'none';
 
+// Luz para texturas
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -251,7 +261,7 @@ const loader = new THREE.GLTFLoader();
 const leaves = [];
 
 loader.load(
-    'assets/quercus.glb', // Asegúrate de que esta ruta sea correcta
+    'assets/quercus.glb', // Reemplaza con la ruta a tu modelo
     (gltf) => {
         const leafModel = gltf.scene;
         for (let i = 0; i < 10; i++) {
@@ -261,7 +271,7 @@ loader.load(
             leaf.position.z = (Math.random() - 0.5) * 10;
             leaf.rotation.x = Math.random() * Math.PI;
             leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.5, 0.5, 0.5);
+            leaf.scale.set(0.5, 0.5, 0.5); // Ajusta tamaño según el modelo
             leaves.push(leaf);
             scene.add(leaf);
         }
@@ -277,8 +287,8 @@ function animate() {
     leaves.forEach(leaf => {
         leaf.rotation.x += 0.005;
         leaf.rotation.y += 0.005;
-        leaf.position.y -= 0.005;
-        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005;
+        leaf.position.y -= 0.005; // Caída lenta
+        leaf.position.x += Math.sin(Date.now() * 0.001 + leaf.position.z) * 0.005; // Vaivén lateral
         if (leaf.position.y < -heroHeight / 200) leaf.position.y = heroHeight / 200;
     });
     renderer.render(scene, camera);
@@ -291,36 +301,6 @@ window.addEventListener('scroll', () => {
         leaf.rotation.z = scrollY * 0.001;
     });
     camera.position.y = -scrollY * 0.01;
-});
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    leaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    camera.position.y = -scrollY * 0.01;
-});
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    leaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    camera.position.y = -scrollY * 0.01;
-});
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    leaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    camera.position.y = -scrollY * 0.01;
-});
-
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    leaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    camera.position.y = -scrollY * 0.01;
-});
-</script>
+});</script>
 </body>
 </html>
