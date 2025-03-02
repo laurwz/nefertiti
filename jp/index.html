@@ -277,12 +277,15 @@
         }
         animateHero();
     
-        // Hojas 3D moviéndose en .brisa
+      
+      
+      
+       // Hojas 3D moviéndose en .brisa
 const brisaScene = new THREE.Scene();
 const brisaCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const brisaRenderer = new THREE.WebGLRenderer({ alpha: true });
 const brisaSection = document.querySelector('.brisa');
-const brisaHeight = brisaSection.offsetHeight;
+let brisaHeight = brisaSection.offsetHeight;
 brisaRenderer.setSize(window.innerWidth, brisaHeight);
 brisaSection.appendChild(brisaRenderer.domElement);
 brisaRenderer.domElement.style.position = 'absolute';
@@ -291,76 +294,93 @@ brisaRenderer.domElement.style.left = '0';
 brisaRenderer.domElement.style.zIndex = '5';
 brisaRenderer.domElement.style.pointerEvents = 'none';
 
-const brisaAmbientLight = new THREE.AmbientLight(0xffffff, 0.8);
+// Iluminación anaranjada sin teñir el modelo
+const brisaAmbientLight = new THREE.AmbientLight(0x224720, 0.8);
 brisaScene.add(brisaAmbientLight);
-const brisaDirectionalLight = new THREE.DirectionalLight(0xffffff, 1);
-brisaDirectionalLight.position.set(5, 10, 7.5);
+const brisaDirectionalLight = new THREE.DirectionalLight(0x156e11, 0.8);
+brisaDirectionalLight.position.set(75, 3, 17.5);
 brisaScene.add(brisaDirectionalLight);
 
-const brisaLeaves = [];
+const brisaElements = []; // Array para montículo y hoja orbitante
 
 loader.load(
-    'assets/quercus.glb', // Ruta local
+    'assets/quercus.glb',
     (gltf) => {
         const leafModel = gltf.scene;
-        for (let i = 0; i < 1; i++) {
+        leafModel.traverse((child) => {
+            if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                    map: child.material.map || null,
+                    normalMap: child.material.normalMap || null,
+                    roughness: 0.5,
+                    metalness: 0.1
+                });
+            }
+        });
+
+        // Montículo de hojas
+        for (let i = 0; i < 1; i++) { // hojas para el montículo
             const leaf = leafModel.clone();
-            leaf.position.x = -10 + Math.random() * 38; // Rango horizontal
-            leaf.position.y = -brisaHeight / 2; // Centrado en la sección
-            leaf.position.z = (Math.random() - 0.05) * 2;
-            leaf.rotation.x =  Math.random() * Math.PI;
-            leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(3,3,3);
-            leaf.userData.windSpeed = Math.random() * 0.007 + 0.001;
-            leaf.userData.friction = 0.98;
-            leaf.userData.headwind = -0.2;
-            brisaLeaves.push(leaf);
+            leaf.position.x = (Math.random() - 0.5) * 5; // Rango estrecho alrededor del centro
+            leaf.position.y = -brisaHeight / 2 + Math.random() * 2; // Apiladas cerca del suelo
+            leaf.position.z = (Math.random() - 0.5) * 5;
+            leaf.rotation.x = (Math.random() - 0.5) * 5;
+            leaf.rotation.y = (Math.random() - 0.5) * 5;
+            leaf.rotation.z = Math.random() * Math.PI;
+            leaf.scale.set(8, 8, 12);
+            leaf.userData.floatOffset = Math.random() * Math.PI; // Para mecerse
+            leaf.userData.type = 'pile';
+            brisaElements.push(leaf);
             brisaScene.add(leaf);
-         }
-        console.log('Hojas 3D cargadas en .brisa');
+        }
+
+       
+        console.log('Elementos 3D cargados en .brisa');
     },
     undefined,
     (error) => console.error('Error cargando modelo en .brisa:', error)
 );
 
-
-brisaCamera.position.z = 30;
-brisaCamera.position.y = brisaHeight / 0; // Centra la cámara en la sección
+brisaCamera.position.z = 12; // Cámara más cerca para ver el montículo
+brisaCamera.position.y = brisaHeight / 5; // Elevada para vista picada
+brisaCamera.lookAt(0, -brisaHeight / 2, 0); // Mirando al montículo
 
 // Actualizar tamaño del lienzo y cámara al redimensionar
 function updateBrisaSize() {
     brisaHeight = brisaSection.offsetHeight;
     brisaRenderer.setSize(window.innerWidth, brisaHeight);
     brisaCamera.aspect = window.innerWidth / window.innerHeight;
+    brisaCamera.position.y = brisaHeight / 2;
+    brisaCamera.lookAt(0, -brisaHeight / 2, 0);
     brisaCamera.updateProjectionMatrix();
 }
 window.addEventListener('resize', updateBrisaSize);
 
 function animateBrisa() {
     requestAnimationFrame(animateBrisa);
-    brisaLeaves.forEach(leaf => {
-        leaf.position.x += leaf.userData.windSpeed;
-        leaf.position.y = -brisaHeight / 4; // Línea fija cerca del suelo
-        leaf.rotation.x += 0.002;
-        leaf.rotation.y += 0.002;
-        if (leaf.position.x > 20) leaf.position.x = -20;
+    const time = Date.now();
+
+    brisaElements.forEach(element => {
+        if (element.userData.type === 'pile') {
+            // Mecerse sutilmente en el montículo
+            element.rotation.x = Math.sin(time * 0.001 + element.userData.floatOffset) * 0.05;
+            element.rotation.y = Math.cos(time * 0.001 + element.userData.floatOffset) * 0.05;
+            element.position.y = -brisaHeight / 2 + Math.sin(time * 0.001 + element.userData.floatOffset) * 0.5;
+        } else if (element.userData.type === 'orbit') {
+            // Órbita circular alrededor del montículo
+            element.userData.angle += 0.02; // Velocidad de órbita
+            element.position.x = Math.cos(element.userData.angle) * 5; // Radio 5
+            element.position.z = Math.sin(element.userData.angle) * 5;
+            element.position.y = -brisaHeight / 2 + 3 + Math.sin(time * 0.001) * 0.5; // Sube y baja un poco
+            element.rotation.y += 0.01; // Rotación adicional
+        }
     });
-    brisaCamera.position.y = -brisaHeight / 4; // Cámara sigue la línea
+
     brisaRenderer.render(brisaScene, brisaCamera);
 }
 animateBrisa();
 
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    heroLeaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    brisaLeaves.forEach(leaf => {
-        leaf.rotation.z = scrollY * 0.001;
-    });
-    heroCamera.position.y = -scrollY * 0.01;
-    brisaCamera.position.y = -scrollY * 0.01 - brisaHeight / 4; // Ajustado dinámicamente
-});
+
     </script>
 </body>
 </html>

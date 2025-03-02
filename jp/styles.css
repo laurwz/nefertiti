@@ -24,12 +24,12 @@ body {
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 4rem;
     margin-bottom: 0.5rem;
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: 2rem;
     margin-bottom: 0.5rem;
 }
 
@@ -59,6 +59,7 @@ h2 {
 nav {
     padding: 1rem;
     text-align: center;
+    position: relative;
 }
 
 .lang-gl nav { background-color: var(--gris-piedra); }
@@ -336,6 +337,7 @@ nav a:hover { color: var(--cereza); }
     height: 20vh; /* Altura ajustable */
     position: relative;
     overflow: hidden; /* Opcional, para evitar desbordamiento */
+    z-index: 4;
 }
 
 .form-section {
