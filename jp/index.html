@@ -303,22 +303,20 @@ loader.load(
     'assets/quercus.glb', // Ruta local
     (gltf) => {
         const leafModel = gltf.scene;
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 1; i++) {
             const leaf = leafModel.clone();
-            leaf.position.x = -10 + Math.random() * 6; // Rango horizontal
-            leaf.position.y = brisaHeight / 4 - Math.random() * brisaHeight; // Centrado en la sección
-            leaf.position.z = (Math.random() - 0.003) * 2;
+            leaf.position.x = -10 + Math.random() * 38; // Rango horizontal
+            leaf.position.y = -brisaHeight / 2; // Centrado en la sección
+            leaf.position.z = (Math.random() - 0.05) * 2;
             leaf.rotation.x =  Math.random() * Math.PI;
             leaf.rotation.y = Math.random() * Math.PI;
-            leaf.scale.set(0.09, 0.09, 0.09);
+            leaf.scale.set(3,3,3);
             leaf.userData.windSpeed = Math.random() * 0.007 + 0.001;
-            leaf.userData.friction = 1;
+            leaf.userData.friction = 0.98;
             leaf.userData.headwind = -0.2;
             brisaLeaves.push(leaf);
             brisaScene.add(leaf);
-            brisaLeaves.push(leaf);
-            brisaScene.add(leaf);
-        }
+         }
         console.log('Hojas 3D cargadas en .brisa');
     },
     undefined,
@@ -326,17 +324,28 @@ loader.load(
 );
 
 
-brisaCamera.position.z = 40;
-brisaCamera.position.y = brisaHeight / -50; // Centra la cámara en la sección
+brisaCamera.position.z = 30;
+brisaCamera.position.y = brisaHeight / 0; // Centra la cámara en la sección
+
+// Actualizar tamaño del lienzo y cámara al redimensionar
+function updateBrisaSize() {
+    brisaHeight = brisaSection.offsetHeight;
+    brisaRenderer.setSize(window.innerWidth, brisaHeight);
+    brisaCamera.aspect = window.innerWidth / window.innerHeight;
+    brisaCamera.updateProjectionMatrix();
+}
+window.addEventListener('resize', updateBrisaSize);
 
 function animateBrisa() {
     requestAnimationFrame(animateBrisa);
     brisaLeaves.forEach(leaf => {
         leaf.position.x += leaf.userData.windSpeed;
+        leaf.position.y = -brisaHeight / 4; // Línea fija cerca del suelo
         leaf.rotation.x += 0.002;
         leaf.rotation.y += 0.002;
         if (leaf.position.x > 20) leaf.position.x = -20;
     });
+    brisaCamera.position.y = -brisaHeight / 4; // Cámara sigue la línea
     brisaRenderer.render(brisaScene, brisaCamera);
 }
 animateBrisa();
@@ -350,7 +359,7 @@ window.addEventListener('scroll', () => {
         leaf.rotation.z = scrollY * 0.001;
     });
     heroCamera.position.y = -scrollY * 0.01;
-    brisaCamera.position.y = -scrollY * 0.01 + brisaHeight / 200; // Ajusta cámara según scroll
+    brisaCamera.position.y = -scrollY * 0.01 - brisaHeight / 4; // Ajustado dinámicamente
 });
     </script>
 </body>
